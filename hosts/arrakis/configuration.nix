@@ -13,6 +13,7 @@
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.kernelParams = [ "consoleblank=60" ];
 
   networking.hostName = "arrakis"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -55,6 +56,12 @@
 
   # Configure console keymap
   console.keyMap = "sv-latin1";
+
+  services.logind.settings.Login = {
+    HandleLidSwitch = "ignore";
+    HandleLidSwitchExternalPower = "ignore";
+    HandleLidSwitchDocked = "ignore";
+  };
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.psoder = {
