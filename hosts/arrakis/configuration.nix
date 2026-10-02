@@ -127,6 +127,7 @@
     age
     cloudflared
     ddns-updater
+    yazi
   ];
 
   sops = {
@@ -226,6 +227,11 @@
         UMask = "0077";
       };
     };
+  };
+
+  services.jellyfin = {
+    enable = true;
+    openFirewall = true;
   };
 
   # Open ports in the firewall.
