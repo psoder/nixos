@@ -10,10 +10,12 @@
     ./hardware-configuration.nix
   ];
 
+  boot.kernelParams = [ "consoleblank=60" ];
+
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot.configurationLimit = 10;
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.kernelParams = [ "consoleblank=60" ];
 
   networking.hostName = "arrakis"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -29,6 +31,26 @@
     "nix-command"
     "flakes"
   ];
+
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 30d";
+  };
+
+  system.autoUpgrade = {
+    enable = true;
+    flake = "github:psoder/nixos/main#arrakis";
+    flags = [ "--print-build-logs" ];
+    dates = "04:00";
+    randomizedDelaySec = "45min";
+    persistent = true;
+    allowReboot = true;
+    rebootWindow = {
+      lower = "04:00";
+      upper = "06:00";
+    };
+  };
 
   # Set your time zone.
   time.timeZone = "Europe/Stockholm";
