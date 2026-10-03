@@ -10,7 +10,29 @@
     ./hardware-configuration.nix
   ];
 
-  boot.kernelParams = [ "consoleblank=60" ];
+  boot.kernelParams = [
+    "consoleblank=60"
+
+    # Logging
+    "loglevel=7"
+    "ignore_loglevel"
+    "printk.time=1"
+    "nmi_watchdog=1"
+    "printk.always_kmsg_dump=Y"
+  ];
+
+  boot.kernel.sysctl = {
+    "kernel.watchdog" = 1;
+    "kernel.nmi_watchdog" = 1;
+
+    # Useful while debugging: turn detected lockups into a panic
+    # so pstore/watchdogs have a better chance of recording/rebooting.
+    "kernel.softlockup_panic" = 1;
+    "kernel.hardlockup_panic" = 1;
+
+    # Reboot 30 seconds after a kernel panic.
+    "kernel.panic" = 30;
+  };
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
