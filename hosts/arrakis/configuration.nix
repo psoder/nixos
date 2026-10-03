@@ -96,6 +96,7 @@
   users.users.psoder = {
     isNormalUser = true;
     description = "Pontus";
+    group = "psoder";
     extraGroups = [
       "networkmanager"
       "wheel"
@@ -128,7 +129,16 @@
       group = "ddns-updater";
     };
 
+    users.jellyfin = {
+      isSystemUser = true;
+      linger = true;
+      group = "jellyfin";
+      extraGroups = [ "media" ];
+    };
+
     groups.ddns-updater = { };
+    groups.psoder = { };
+    groups.media = { };
   };
 
   # Allow unfree packages
@@ -200,6 +210,26 @@
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
+
+  systemd.tmpfiles.settings."10-srv" = {
+    "/srv".d = {
+      mode = "0755";
+      user = "root";
+      group = "root";
+    };
+
+    "/srv/files".d = {
+      mode = "0755";
+      user = "psoder";
+      group = "psoder";
+    };
+
+    "/srv/media".d = {
+      mode = "0775";
+      user = "psoder";
+      group = "media";
+    };
+  };
 
   services.cloudflared = {
     enable = true;
