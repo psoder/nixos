@@ -92,6 +92,13 @@
     HandleLidSwitchDocked = "ignore";
   };
 
+  services.journald.extraConfig = ''
+    Storage=persistent
+    SystemMaxUse=2G
+    MaxRetentionSec=1month
+    Compress=yes
+  '';
+
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.psoder = {
     isNormalUser = true;
