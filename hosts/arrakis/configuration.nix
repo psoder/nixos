@@ -9,8 +9,11 @@
     ./hardware-configuration.nix
   ];
 
+  hardware.enableRedistributableFirmware = true;
+
   boot.kernelParams = [
     "consoleblank=60"
+    "i915.enable_guc=3"
 
     # Logging
     "loglevel=7"
@@ -336,6 +339,11 @@
   services.jellyfin = {
     enable = true;
     openFirewall = true;
+    transcoding = {
+      enableIntelLowPowerEncoding = true;
+      threadCount = 3;
+      throttleTranscoding = true;
+    };
   };
 
   # Open ports in the firewall.
