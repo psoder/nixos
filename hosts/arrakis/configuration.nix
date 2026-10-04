@@ -6,7 +6,6 @@
 
 {
   imports = [
-    # Include the results of the hardware scan.
     ./hardware-configuration.nix
   ];
 
@@ -19,19 +18,23 @@
     "printk.time=1"
     "nmi_watchdog=1"
     "printk.always_kmsg_dump=Y"
+
+    "intel_idle.max_cstate=1"
   ];
+
+  boot.kernelModules = [ "iTCO_wdt" ];
 
   boot.kernel.sysctl = {
     "kernel.watchdog" = 1;
     "kernel.nmi_watchdog" = 1;
 
+    # Reboot 30 seconds after a kernel panic.
+    "kernel.panic" = 30;
+
     # Useful while debugging: turn detected lockups into a panic
     # so pstore/watchdogs have a better chance of recording/rebooting.
     "kernel.softlockup_panic" = 1;
     "kernel.hardlockup_panic" = 1;
-
-    # Reboot 30 seconds after a kernel panic.
-    "kernel.panic" = 30;
   };
 
   # Bootloader.
@@ -60,31 +63,21 @@
     options = "--delete-older-than 30d";
   };
 
-  system.autoUpgrade = {
-    enable = true;
-    flake = "github:psoder/nixos/main#arrakis";
-    flags = [ "--print-build-logs" ];
-    dates = "04:00";
-    randomizedDelaySec = "45min";
-    persistent = true;
-    allowReboot = true;
-    rebootWindow = {
-      lower = "04:00";
-      upper = "06:00";
-    };
-  };
+  # system.autoUpgrade = {
+  #   enable = true;
+  #   flake = "github:psoder/nixos/main#arrakis";
+  #   flags = [ "--print-build-logs" ];
+  #   dates = "04:00";
+  #   randomizedDelaySec = "45min";
+  #   persistent = true;
+  #   allowReboot = false;
+  #   rebootWindow = {
+  #     lower = "04:00";
+  #     upper = "06:00";
+  #   };
+  # };
 
-  systemd.targets = {
-    sleep.enable = false;
-    suspend.enable = false;
-    hibernate.enable = false;
-    hybrid-sleep.enable = false;
-  };
-
-  # Set your time zone.
   time.timeZone = "Europe/Stockholm";
-
-  # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
 
   i18n.extraLocaleSettings = {
@@ -121,38 +114,39 @@
     Compress=yes
   '';
 
-  # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users.psoder = {
-    isNormalUser = true;
-    description = "Pontus";
-    group = "psoder";
-    extraGroups = [
-      "networkmanager"
-      "wheel"
-      "docker"
-    ];
-    shell = pkgs.fish;
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID2fu6PtQ/hFVb+ik45DPlBL6MBXjXLv/R6Dpbiv4F1s pontus@yavin-2026"
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID2/tUwBk2rlPtlldBEF6ZVTDwD8NHhlRn1iy9PGsXF7 pontus@trantor-2025"
-    ];
-
-    packages = with pkgs; [
-      nixfmt-rfc-style
-    ];
-  };
-
-  users.users.deploy = {
-    isNormalUser = true;
-    description = "Deploy user for running apps";
-    shell = pkgs.fish;
-    extraGroups = [ "docker" ];
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIiVhGSdGsZlWkhRsmNk/RIXuAdHSzFKRGOLlhrdsAZY deploy@arrakis"
-    ];
-  };
-
   users = {
+    # Define a user account. Don't forget to set a password with ‘passwd’.
+    users.psoder = {
+      isNormalUser = true;
+      description = "Pontus";
+      group = "psoder";
+      extraGroups = [
+        "networkmanager"
+        "wheel"
+        "docker"
+      ];
+      shell = pkgs.fish;
+      openssh.authorizedKeys.keys = [
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID2fu6PtQ/hFVb+ik45DPlBL6MBXjXLv/R6Dpbiv4F1s pontus@yavin-2026"
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID2/tUwBk2rlPtlldBEF6ZVTDwD8NHhlRn1iy9PGsXF7 pontus@trantor-2025"
+      ];
+
+      packages = with pkgs; [
+        nixfmt-rfc-style
+        zellij
+      ];
+    };
+
+    users.deploy = {
+      isNormalUser = true;
+      description = "Deploy user for running apps";
+      shell = pkgs.fish;
+      extraGroups = [ "docker" ];
+      openssh.authorizedKeys.keys = [
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIiVhGSdGsZlWkhRsmNk/RIXuAdHSzFKRGOLlhrdsAZY deploy@arrakis"
+      ];
+    };
+
     users.ddns-updater = {
       isSystemUser = true;
       linger = true;
@@ -236,29 +230,47 @@
   #   enableSSHSupport = true;
   # };
 
+  systemd = {
+    settings.Manager = {
+      RuntimeWatchdogSec = "30s";
+      WatchdogDevice = "/dev/watchdog";
+    };
+
+    targets = {
+      sleep.enable = false;
+      suspend.enable = false;
+      hibernate.enable = false;
+      hybrid-sleep.enable = false;
+    };
+
+    tmpfiles.settings."10-srv" = {
+      "/srv".d = {
+        mode = "0755";
+        user = "root";
+        group = "root";
+      };
+
+      "/srv/files".d = {
+        mode = "0755";
+        user = "psoder";
+        group = "psoder";
+      };
+
+      "/srv/media".d = {
+        mode = "0775";
+        user = "psoder";
+        group = "media";
+      };
+    };
+  };
+
   # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
 
-  systemd.tmpfiles.settings."10-srv" = {
-    "/srv".d = {
-      mode = "0755";
-      user = "root";
-      group = "root";
-    };
-
-    "/srv/files".d = {
-      mode = "0755";
-      user = "psoder";
-      group = "psoder";
-    };
-
-    "/srv/media".d = {
-      mode = "0775";
-      user = "psoder";
-      group = "media";
-    };
+  services.tailscale = {
+    enable = true;
   };
 
   services.cloudflared = {
