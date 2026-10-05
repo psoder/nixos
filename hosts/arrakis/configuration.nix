@@ -207,6 +207,13 @@
       "cloudflare/tunnels/arrakis/credentials" = { };
       "cloudflare/zones/psoder.net/zone_id" = { };
       "cloudflare/zones/psoder.net/dns/api_token" = { };
+      "radicale-users" = {
+        sopsFile = ../../secrets/radicale-users.enc;
+        format = "binary";
+        owner = "radicale";
+        group = "radicale";
+        mode = "0400";
+      };
     };
 
     templates."ddns-updater.config.json".content = builtins.toJSON {
@@ -274,6 +281,15 @@
 
   services.tailscale = {
     enable = true;
+    serve = {
+      enable = true;
+      services.radicale = {
+        advertised = true;
+        endpoints = {
+          "tcp:5232" = "http://localhost:5232";
+        };
+      };
+    };
   };
 
   services.cloudflared = {
@@ -343,6 +359,18 @@
       enableIntelLowPowerEncoding = true;
       threadCount = 3;
       throttleTranscoding = true;
+    };
+  };
+
+  services.radicale = {
+    enable = true;
+    settings = {
+      server.hosts = [ "127.0.0.1:5232" ];
+      auth = {
+        type = "htpasswd";
+        htpasswd_filename = config.sops.secrets."radicale-users".path;
+        htpasswd_encryption = "bcrypt";
+      };
     };
   };
 
