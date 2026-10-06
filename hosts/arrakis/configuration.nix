@@ -166,6 +166,7 @@
     groups.ddns-updater = { };
     groups.psoder = { };
     groups.media = { };
+    groups.jellyfin = { };
   };
 
   # Allow unfree packages
@@ -281,15 +282,15 @@
 
   services.tailscale = {
     enable = true;
-    serve = {
-      enable = true;
-      services.radicale = {
-        advertised = true;
-        endpoints = {
-          "tcp:5232" = "http://localhost:5232";
-        };
-      };
-    };
+    # serve = {
+    #   enable = true;
+    #   services.radicale = {
+    #     advertised = true;
+    #     endpoints = {
+    #       "tcp:443" = "http://localhost:5232";
+    #     };
+    #   };
+    # };
   };
 
   services.cloudflared = {
@@ -365,7 +366,7 @@
   services.radicale = {
     enable = true;
     settings = {
-      server.hosts = [ "127.0.0.1:5232" ];
+      server.hosts = [ "0.0.0.0:5232" ];
       auth = {
         type = "htpasswd";
         htpasswd_filename = config.sops.secrets."radicale-users".path;
@@ -375,7 +376,7 @@
   };
 
   # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
+  networking.firewall.allowedTCPPorts = [ 5232 ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
