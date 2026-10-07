@@ -215,6 +215,12 @@
         group = "radicale";
         mode = "0400";
       };
+      "restic/r2-env" = {
+        sopsFile = ../../secrets/restic.yaml.enc;
+      };
+      "restic/password" = {
+        sopsFile = ../../secrets/restic.yaml.enc;
+      };
     };
 
     templates."ddns-updater.config.json".content = builtins.toJSON {
@@ -373,6 +379,33 @@
         htpasswd_encryption = "bcrypt";
       };
     };
+  };
+
+  services = {
+    restic = {
+      backups.radicale = {
+        initialize = true;
+        paths = [ "/var/lib/radicale/collections/collection-root" ];
+
+        repository = "s3:https://50a2bdca956af499212174c1da9d1c21.r2.cloudflarestorage.com/backups/radicale";
+
+        environmentFile = config.sops.secrets."restic/r2-env".path;
+        passwordFile = config.sops.secrets."restic/password".path;
+
+        timerConfig = {
+          OnCalendar = "*-*-* 00,06,12,18:00:00";
+          Persistent = true;
+        };
+
+        pruneOpts = [
+          "--keep-daily 7"
+          "--keep-weekly 4"
+          "--keep-monthly 12"
+          "--keep-yearly 3"
+        ];
+      };
+    };
+
   };
 
   # Open ports in the firewall.
