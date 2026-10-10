@@ -127,6 +127,7 @@
         "networkmanager"
         "wheel"
         "docker"
+        "media"
       ];
       shell = pkgs.fish;
       openssh.authorizedKeys.keys = [
@@ -135,8 +136,6 @@
       ];
 
       packages = with pkgs; [
-        nixfmt
-        zellij
       ];
     };
 
@@ -166,6 +165,13 @@
       isSystemUser = true;
       linger = true;
       group = "jellyfin";
+      extraGroups = [ "media" ];
+    };
+
+    users.qbittorrent = {
+      isSystemUser = true;
+      linger = true;
+      group = "qbittorrent";
       extraGroups = [ "media" ];
     };
 
@@ -206,6 +212,12 @@
     ddns-updater
     yazi
     xandikos
+    nixfmt
+    zellij
+    bottom
+    fd
+    ripgrep
+    dust
   ];
 
   sops = {
@@ -445,6 +457,11 @@
         "--current-user-principal /xandikos"
         "--dump-dav-xml"
       ];
+    };
+
+    qbittorrent = {
+      enable = true;
+      webuiPort = 8070;
     };
   };
 
