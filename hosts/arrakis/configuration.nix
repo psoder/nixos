@@ -414,6 +414,28 @@
       };
     };
 
+    samba = {
+      enable = true;
+      settings = {
+        global = {
+          "workgroup" = "WORKGROUP";
+          "server string" = "nixos-server";
+          "security" = "user";
+          "server min protocol" = "SMB2";
+          "map to guest" = "never";
+        };
+
+        files = {
+          path = "/srv/share";
+          browseable = "yes";
+          "read only" = "no";
+          "guest ok" = "no";
+          "valid users" = "psoder";
+          "force user" = "psoder";
+        };
+      };
+    };
+
     xandikos = {
       enable = true;
       port = 4040;
@@ -424,6 +446,11 @@
         "--dump-dav-xml"
       ];
     };
+  };
+
+  networking.firewall.interfaces = {
+    tailscale0.allowedTCPPorts = [ 445 ];
+    enp3s0.allowedTCPPorts = [ 445 ];
   };
 
   # Open ports in the firewall.
