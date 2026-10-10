@@ -66,19 +66,19 @@
     options = "--delete-older-than 30d";
   };
 
-  # system.autoUpgrade = {
-  #   enable = true;
-  #   flake = "github:psoder/nixos/main#arrakis";
-  #   flags = [ "--print-build-logs" ];
-  #   dates = "04:00";
-  #   randomizedDelaySec = "45min";
-  #   persistent = true;
-  #   allowReboot = false;
-  #   rebootWindow = {
-  #     lower = "04:00";
-  #     upper = "06:00";
-  #   };
-  # };
+  system.autoUpgrade = {
+    enable = true;
+    flake = "github:psoder/nixos/main#arrakis";
+    flags = [ "--print-build-logs" ];
+    dates = "04:00";
+    randomizedDelaySec = "45min";
+    persistent = true;
+    allowReboot = false;
+    rebootWindow = {
+      lower = "04:00";
+      upper = "06:00";
+    };
+  };
 
   time.timeZone = "Europe/Stockholm";
   i18n.defaultLocale = "en_US.UTF-8";
