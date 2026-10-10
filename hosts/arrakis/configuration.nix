@@ -156,6 +156,12 @@
       group = "ddns-updater";
     };
 
+    users.xandikos = {
+      isSystemUser = true;
+      linger = true;
+      group = "xandikos";
+    };
+
     users.jellyfin = {
       isSystemUser = true;
       linger = true;
@@ -167,6 +173,7 @@
     groups.psoder = { };
     groups.media = { };
     groups.jellyfin = { };
+    groups.xandikos = { };
   };
 
   # Allow unfree packages
@@ -198,6 +205,7 @@
     cloudflared
     ddns-updater
     yazi
+    xandikos
   ];
 
   sops = {
@@ -288,15 +296,15 @@
 
   services.tailscale = {
     enable = true;
-    # serve = {
-    #   enable = true;
-    #   services.radicale = {
-    #     advertised = true;
-    #     endpoints = {
-    #       "tcp:443" = "http://localhost:5232";
-    #     };
-    #   };
-    # };
+    serve = {
+      enable = true;
+      services.xandikos = {
+        advertised = true;
+        endpoints = {
+          "tcp:4040" = "http://localhost:4040";
+        };
+      };
+    };
   };
 
   services.cloudflared = {
@@ -406,6 +414,16 @@
       };
     };
 
+    xandikos = {
+      enable = true;
+      port = 4040;
+      address = "127.0.0.1";
+      extraOptions = [
+        "--autocreate"
+        "--current-user-principal /xandikos"
+        "--dump-dav-xml"
+      ];
+    };
   };
 
   # Open ports in the firewall.
