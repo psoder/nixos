@@ -58,7 +58,7 @@
         group = "root";
       };
 
-      "/srv/files".d = {
+      "/srv/data".d = {
         mode = "0755";
         user = "psoder";
         group = "psoder";
@@ -222,25 +222,26 @@
   sops = {
     defaultSopsFile = ../../secrets/secrets.yaml;
     age.keyFile = "/var/lib/sops/age/keys.txt";
-    # secrets = {
-    #   "cloudflared/cert" = { };
-    #   "cloudflare/tunnels/arrakis/credentials" = { };
-    #   "cloudflare/zones/psoder.net/zone_id" = { };
-    #   "cloudflare/zones/psoder.net/dns/api_token" = { };
-    #   "radicale-users" = {
-    #     sopsFile = ../../secrets/radicale-users.enc;
-    #     format = "binary";
-    #     owner = "radicale";
-    #     group = "radicale";
-    #     mode = "0400";
-    #   };
-    #   "restic/r2-env" = {
-    #     sopsFile = ../../secrets/restic.yaml.enc;
-    #   };
-    #   "restic/password" = {
-    #     sopsFile = ../../secrets/restic.yaml.enc;
-    #   };
-    # };
+    secrets = {
+      #   "cloudflared/cert" = { };
+      #   "cloudflare/tunnels/arrakis/credentials" = { };
+      #   "cloudflare/zones/psoder.net/zone_id" = { };
+      #   "cloudflare/zones/psoder.net/dns/api_token" = { };
+      #   "radicale-users" = {
+      #     sopsFile = ../../secrets/radicale-users.enc;
+      #     format = "binary";
+      #     owner = "radicale";
+      #     group = "radicale";
+      #     mode = "0400";
+      #   };
+      #   "restic/r2-env" = {
+      #     sopsFile = ../../secrets/restic.yaml.enc;
+      #   };
+      #   "restic/password" = {
+      #     sopsFile = ../../secrets/restic.yaml.enc;
+      #   };
+      "samba/data-password" = { };
+    };
   };
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -280,6 +281,37 @@
       enable = true;
       webuiPort = 8070;
     };
+
+    samba = {
+      enable = true;
+      settings = {
+        global = {
+          "workgroup" = "WORKGROUP";
+          "server string" = "nixos-server";
+          "security" = "user";
+          "server min protocol" = "SMB2";
+          "map to guest" = "never";
+        };
+
+        data = {
+          path = "/srv/data";
+          browseable = "yes";
+          "read only" = "no";
+          "guest ok" = "no";
+          "valid users" = "psoder";
+          "force user" = "psoder";
+        };
+
+        media = {
+          path = "/srv/media";
+          browseable = "yes";
+          "read only" = "no";
+          "guest ok" = "no";
+          "valid users" = "psoder";
+          "force user" = "psoder";
+        };
+      };
+    };
   };
 
   # Open ports in the firewall.
@@ -290,6 +322,13 @@
   networking.firewall.interfaces.tailscale0.allowedTCPPorts = [
     443
   ];
+
+  system.activationScripts.sambaPassword.text = ''
+    password=$(${pkgs.coreutils}/bin/cat /run/secrets/samba/data-password)
+
+    printf '%s\n%s\n' "$password" "$password" \
+      | ${lib.getExe' pkgs.samba "smbpasswd"} -a -s psoder
+  '';
 
   # Copy the NixOS configuration file and link it from the resulting system
   # (/run/current-system/configuration.nix). This is useful in case you
