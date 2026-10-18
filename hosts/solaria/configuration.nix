@@ -1,7 +1,3 @@
-# Edit this configuration file to define what should be installed on
-# your system. Help is available in the configuration.nix(5) man page, on
-# https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-
 {
   config,
   lib,
@@ -11,15 +7,11 @@
 
 {
   imports = [
-    # Include the results of the hardware scan.
     ./hardware-configuration.nix
   ];
 
-  # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-
-  # Use latest kernel.
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
   networking.hostName = "solaria";
@@ -27,10 +19,6 @@
 
   # Set your time zone.
   # time.timeZone = "Europe/Amsterdam";
-
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
   nix.settings.experimental-features = [
     "nix-command"
@@ -231,12 +219,12 @@
       #     group = "radicale";
       #     mode = "0400";
       #   };
-      #   "restic/r2-env" = {
-      #     sopsFile = ../../secrets/restic.yaml.enc;
-      #   };
-      #   "restic/password" = {
-      #     sopsFile = ../../secrets/restic.yaml.enc;
-      #   };
+      # "restic/r2-env" = {
+      #   sopsFile = ../../secrets/restic.yaml.enc;
+      # };
+      "restic/password" = {
+        sopsFile = ../../secrets/restic.yaml.enc;
+      };
       "samba/data-password" = { };
     };
   };
@@ -307,6 +295,28 @@
           "valid users" = "psoder";
           "force user" = "psoder";
         };
+      };
+    };
+
+    restic = {
+      backups.data-files = {
+        initialize = true;
+        paths = [ "/srv/data/files" ];
+
+        repository = "/mnt/hdd0/backups/restic/data-files";
+        passwordFile = config.sops.secrets."restic/password".path;
+
+        timerConfig = {
+          OnCalendar = "*-*-* 00,06,12,18:00:00";
+          Persistent = true;
+        };
+
+        pruneOpts = [
+          "--keep-daily 7"
+          "--keep-weekly 4"
+          "--keep-monthly 12"
+          "--keep-yearly 3"
+        ];
       };
     };
   };

@@ -39,29 +39,36 @@
     ];
   };
 
-  fileSystems."/srv" = {
+  fileSystems."/mnt/hdd0" = {
     device = "/dev/disk/by-uuid/04b98a25-ce79-4d1c-97ca-2c01236a320c";
     fsType = "ext4";
   };
 
-  fileSystems."/mnt/data" = {
+  fileSystems."/mnt/ssd0" = {
     device = "/dev/disk/by-uuid/3c9853fd-8088-4769-bb10-b7a3b1f0f7a6";
     fsType = "ext4";
     neededForBoot = true;
   };
 
-  fileSystems."/srv/data" = {
-    device = "/mnt/data/data";
+  fileSystems."/var/lib" = {
+    device = "/mnt/ssd0/var/lib";
     fsType = "none";
     options = [ "bind" ];
-    depends = [ "/mnt/data" ];
+    depends = [ "/mnt/ssd0" ];
   };
 
-  fileSystems."/var/lib" = {
-    device = "/mnt/data/var/lib";
+  fileSystems."/srv/data" = {
+    device = "/mnt/ssd0/data";
     fsType = "none";
     options = [ "bind" ];
-    depends = [ "/mnt/data" ];
+    depends = [ "/mnt/ssd0" ];
+  };
+
+  fileSystems."/srv/media" = {
+    device = "/mnt/hdd0/media";
+    fsType = "none";
+    options = [ "bind" ];
+    depends = [ "/mnt/hdd0" ];
   };
 
   swapDevices = [ ];
