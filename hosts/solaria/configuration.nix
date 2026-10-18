@@ -58,9 +58,6 @@
         group = "media";
       };
     };
-
-    # services.caddy.serviceConfig.EnvironmentFile =
-    #   config.sops.secrets."cloudflare/zones/psoder.net/dns/api_token".path;
   };
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
@@ -134,17 +131,17 @@
         gs = "git status";
       };
       loginShellInit = ''
-        	function fish_greeting
-        	  fastfetch
-        	end
+        function fish_greeting
+          fastfetch
+        end
       '';
       interactiveShellInit = ''
-        	zoxide init fish --cmd cd | source
+        zoxide init fish --cmd cd | source
 
-        	function fish_user_key_bindings
-        	  fish_default_key_bindings -M insert
-        	  fish_vi_key_bindings --no-erase insert
-        	end
+        function fish_user_key_bindings
+          fish_default_key_bindings -M insert
+          fish_vi_key_bindings --no-erase insert
+        end
       '';
     };
 
@@ -211,7 +208,7 @@
       #   "cloudflared/cert" = { };
       #   "cloudflare/tunnels/arrakis/credentials" = { };
       #   "cloudflare/zones/psoder.net/zone_id" = { };
-      #   "cloudflare/zones/psoder.net/dns/api_token" = { };
+      "cloudflare/zones/psoder.net/dns/api_token" = { };
       #   "radicale-users" = {
       #     sopsFile = ../../secrets/radicale-users.enc;
       #     format = "binary";
@@ -226,6 +223,12 @@
         sopsFile = ../../secrets/restic.yaml.enc;
       };
       "samba/data-password" = { };
+    };
+
+    templates = {
+      "caddy_env".content = ''
+        CF_API_TOKEN=${config.sops.placeholder."cloudflare/zones/psoder.net/dns/api_token"}
+      '';
     };
   };
 
@@ -243,18 +246,25 @@
   services = {
     openssh.enable = true;
 
-    # caddy = {
-    #   enable = true;
-    #   virtualHosts = {
-    #     "apollo.psoder.net".extraConfig = ''
-    #       tls {
-    #       	dns cloudflare {env.CLOUDFLARE_API_TOKEN}
-    #       }
-    #
-    #       reverse_proxy = 127.0.0.1:8096
-    #     '';
-    #   };
-    # };
+    caddy = {
+      enable = true;
+      package = pkgs.caddy.withPlugins {
+        plugins = [
+          "github.com/caddy-dns/cloudflare@v0.2.4"
+        ];
+        hash = "sha256-dQvk6ezY6TQ1J7PjhCXnThF/SqVgPwBO8/RXzHCY+js=";
+      };
+      environmentFile = config.sops.templates."caddy_env".path;
+      virtualHosts = {
+        "apollo.psoder.net".extraConfig = ''
+          tls {
+              dns cloudflare {env.CF_API_TOKEN}
+          }
+
+          reverse_proxy 127.0.0.1:8096
+        '';
+      };
+    };
 
     tailscale = {
       enable = true;
@@ -360,5 +370,4 @@
   #
   # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion .
   system.stateVersion = "26.05"; # Did you read the comment?
-
 }
