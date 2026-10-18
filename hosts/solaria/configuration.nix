@@ -160,10 +160,7 @@
       '';
     };
 
-    # neovim = {
-    #   enable = true;
-    #   defaultEditor = true;
-    # };
+    neovim.defaultEditor = true;
 
     git = {
       enable = true;

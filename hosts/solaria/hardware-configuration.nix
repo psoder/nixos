@@ -44,9 +44,24 @@
     fsType = "ext4";
   };
 
-  fileSystems."/var/lib" = {
+  fileSystems."/mnt/data" = {
     device = "/dev/disk/by-uuid/3c9853fd-8088-4769-bb10-b7a3b1f0f7a6";
     fsType = "ext4";
+    neededForBoot = true;
+  };
+
+  fileSystems."/srv/data" = {
+    device = "/mnt/data/data";
+    fsType = "none";
+    options = [ "bind" ];
+    depends = [ "/mnt/data" ];
+  };
+
+  fileSystems."/var/lib" = {
+    device = "/mnt/data/var/lib";
+    fsType = "none";
+    options = [ "bind" ];
+    depends = [ "/mnt/data" ];
   };
 
   swapDevices = [ ];
