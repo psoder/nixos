@@ -172,6 +172,7 @@
     atuin = {
       enable = true;
       enableFishIntegration = true;
+      enableBashIntegration = true;
       settings = {
         filter_mode = "directory";
         ctrl_n_shortcuts = true;
@@ -263,6 +264,14 @@
 
           reverse_proxy 127.0.0.1:8096
         '';
+
+        "torrent.psoder.net".extraConfig = ''
+          tls {
+              dns cloudflare {env.CF_API_TOKEN}
+          }
+
+          reverse_proxy 127.0.0.1:8070
+        '';
       };
     };
 
@@ -275,6 +284,15 @@
     qbittorrent = {
       enable = true;
       webuiPort = 8070;
+      serverConfig = {
+        LegalNotice.Accepted = true;
+        Preferences = {
+          WebUI = {
+            Enabled = true;
+            LocalHostAuth = false;
+          };
+        };
+      };
     };
 
     samba = {
