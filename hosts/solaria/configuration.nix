@@ -200,6 +200,7 @@
     fzf
     zoxide
     fastfetch
+    hdparm
   ];
 
   sops = {
@@ -347,6 +348,10 @@
         ];
       };
     };
+
+    udev.extraRules = ''
+      ACTION=="add|change", SUBSYSTEM=="block", ENV{DEVTYPE}=="disk", ATTRS{serial}=="WFL1EC8L", RUN+="${pkgs.hdparm}/bin/hdparm -S 240 /dev/%k"
+    '';
   };
 
   # Open ports in the firewall.
