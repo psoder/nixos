@@ -8,6 +8,7 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ../../modules/services/xandikos.nix
   ];
 
   boot.loader.systemd-boot.enable = true;
@@ -68,9 +69,6 @@
         group = "psoder";
         extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
         shell = pkgs.fish;
-        packages = with pkgs; [
-          tree
-        ];
         openssh.authorizedKeys.keys = [
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID2fu6PtQ/hFVb+ik45DPlBL6MBXjXLv/R6Dpbiv4F1s pontus@yavin-2026"
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID2/tUwBk2rlPtlldBEF6ZVTDwD8NHhlRn1iy9PGsXF7 pontus@trantor-2025"
