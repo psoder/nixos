@@ -10,7 +10,7 @@
 
   users.groups.jellyfin = { };
 
-  jellyfin.enable = true;
+  services.jellyfin.enable = true;
 
   services.caddy.virtualHosts."apollo.psoder.net" = {
     extraConfig = ''
