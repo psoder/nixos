@@ -8,6 +8,7 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ../../modules/services/jellyfin.nix
     ../../modules/services/xandikos.nix
   ];
 
@@ -75,13 +76,6 @@
         ];
       };
 
-      jellyfin = {
-        isSystemUser = true;
-        linger = true;
-        group = "jellyfin";
-        extraGroups = [ "media" ];
-      };
-
       qbittorrent = {
         isSystemUser = true;
         linger = true;
@@ -93,7 +87,6 @@
     groups = {
       psoder = { };
       media = { };
-      jellyfin = { };
       qbittorrent = { };
     };
 
@@ -256,14 +249,6 @@
       };
       environmentFile = config.sops.templates."caddy_env".path;
       virtualHosts = {
-        "apollo.psoder.net".extraConfig = ''
-          tls {
-              dns cloudflare {env.CF_API_TOKEN}
-          }
-
-          reverse_proxy 127.0.0.1:8096
-        '';
-
         "torrent.psoder.net".extraConfig = ''
           tls {
               dns cloudflare {env.CF_API_TOKEN}
@@ -277,8 +262,6 @@
     tailscale = {
       enable = true;
     };
-
-    jellyfin.enable = true;
 
     qbittorrent = {
       enable = true;
