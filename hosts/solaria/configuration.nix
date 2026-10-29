@@ -10,6 +10,7 @@
     ./hardware-configuration.nix
     ../../modules/default.nix
     ../../modules/backups.nix
+    ../../modules/services/authelia.nix
     ../../modules/services/caddy.nix
     ../../modules/services/jellyfin.nix
     ../../modules/services/qbittorrent.nix
