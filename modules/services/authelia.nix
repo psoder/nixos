@@ -50,6 +50,7 @@
     };
 
     settings = {
+      theme = "auto";
       log.level = "info";
       server.address = "tcp://:9091/";
 
@@ -79,6 +80,12 @@
       storage.local.path = "/var/lib/authelia-main/db.sqlite";
       notifier.filesystem.filename = "/var/lib/authelia-main/notifications.yml";
       authentication_backend.file.path = config.sops.templates."authelia_users".path;
+
+      server = {
+        endpoints = {
+          authz."forward-auth".implementation = "ForwardAuth";
+        };
+      };
     };
   };
 
